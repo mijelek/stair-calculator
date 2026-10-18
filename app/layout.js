@@ -1,20 +1,20 @@
 // app/layout.js
+import { ClerkProvider } from '@clerk/nextjs';
 import './globals.css';
-import { AuthProvider } from './context/AuthContext';
 
 export const metadata = {
-  title: 'Stair Calculator',
-  description: 'Simple Stair & Cost Calculator',
+  title: 'Stair Calculator & Project Tracker',
+  description: 'Professional stair and material calculators',
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body>
-        <AuthProvider>
+    <ClerkProvider>
+      <html lang="en">
+        <body>
           {children}
-        </AuthProvider>
-      </body>
-    </html>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
