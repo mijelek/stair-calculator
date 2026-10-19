@@ -19,9 +19,10 @@ import {
 } from './components/Calculators';
 
 const calculatorList = [
-  { id: 'workers', title: 'Workers and Cost Tracker', desc: 'Manage site worker hours and totals.' },
+  { id: 'workers', title: 'Workers and Cost Tracker', desc: 'Manage site worker rates and totals.' },
   { id: 'cncmat', title: 'CNC Cutting Material Tracker', desc: 'Sheet dimensions, mass, and density.' },
   { id: 'cnctime', title: 'CNC Cutting Time Tracker', desc: 'Machining run times and operational costs.' },
+  { id: 'workinghours', title: 'Working Hours Cost Tracker', desc: 'Track hourly rates and total labor expenses.' },
   { id: 'fasteners', title: 'Fastener Cost Tracker', desc: 'Fastener quantities and pricing.' },
   { id: 'partlist', title: 'Part List Cost Tracker', desc: 'Track minor components and parts.' },
   { id: 'stairparts', title: 'Part List Stair Cost Tracker', desc: 'Main part lists, treads, plates, and galleries.' },
@@ -76,7 +77,7 @@ export default function Home() {
           {!activeCalc ? (
             <div className="dashboard-container">
               
-              {/* Card 1: Project Details (Stacked Vertically) */}
+              {/* Card 1: Project Details */}
               <div className="card" style={{ padding: '20px', textAlign: 'left', alignItems: 'stretch' }}>
                 <h2 style={{ fontSize: '16px', color: '#1e293b', marginBottom: '14px', textAlign: 'center', borderBottom: '1px solid #e1e4e8', paddingBottom: '8px' }}>
                   Project Details
@@ -110,10 +111,10 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Card 2: Navigation List of Sheets (Stacked Vertically Below) */}
+              {/* Card 2: Navigation List of Sheets (All 13) */}
               <div className="card" style={{ padding: '0px', overflow: 'hidden', textAlign: 'left', alignItems: 'stretch' }}>
                 <div style={{ padding: '12px 16px', background: '#f8fafc', borderBottom: '1px solid #e1e4e8', textAlign: 'center' }}>
-                  <h2 style={{ fontSize: '15px', color: '#1e293b' }}>Navigation: List of Sheets</h2>
+                  <h2 style={{ fontSize: '15px', color: '#1e293b' }}>Navigation: List of Sheets ({calculatorList.length})</h2>
                 </div>
                 {calculatorList.map((calc, idx) => (
                   <div
@@ -155,6 +156,7 @@ export default function Home() {
               {activeCalc === 'workers' && <WorkersCostTracker onUpdateCost={setWorkersCost} />}
               {activeCalc === 'cncmat' && <CNCMaterialTracker onUpdateCost={setCncMaterialCost} />}
               {activeCalc === 'cnctime' && <CNCTimeTracker onUpdateCost={setCncTimeCost} />}
+              {activeCalc === 'workinghours' && <WorkersCostTracker onUpdateCost={setWorkersCost} />}
               {activeCalc === 'fasteners' && <FastenerCostTracker onUpdateCost={setFastenerCost} />}
               {activeCalc === 'partlist' && <PartListCostTracker onUpdateCost={setPartListCost} />}
               {activeCalc === 'stairparts' && <PartListStairCostTracker onUpdateCost={setStairPartCost} />}
