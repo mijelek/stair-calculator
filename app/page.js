@@ -1,6 +1,6 @@
 // app/page.js
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth, UserButton } from '@clerk/nextjs';
 import SignedOutView from './components/SignedOutView';
 import {
@@ -22,7 +22,6 @@ const calculatorList = [
   { id: 'workers', title: 'Workers and Cost Tracker', desc: 'Manage site worker rates and totals.' },
   { id: 'cncmat', title: 'CNC Cutting Material Tracker', desc: 'Sheet dimensions, mass, and density.' },
   { id: 'cnctime', title: 'CNC Cutting Time Tracker', desc: 'Machining run times and operational costs.' },
-  { id: 'workinghours', title: 'Working Hours Cost Tracker', desc: 'Track hourly rates and total labor expenses.' },
   { id: 'fasteners', title: 'Fastener Cost Tracker', desc: 'Fastener quantities and pricing.' },
   { id: 'partlist', title: 'Part List Cost Tracker', desc: 'Track minor components and parts.' },
   { id: 'stairparts', title: 'Part List Stair Cost Tracker', desc: 'Main part lists, treads, plates, and galleries.' },
@@ -37,18 +36,79 @@ const calculatorList = [
 export default function Home() {
   const { isSignedIn } = useAuth();
   const [activeCalc, setActiveCalc] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Shared state fed from calculators
-  const [projectPrice, setProjectPrice] = useState(27000);
-  const [workersCost, setWorkersCost] = useState(1424.15);
-  const [cncMaterialCost, setCncMaterialCost] = useState(950.00);
-  const [cncTimeCost, setCncTimeCost] = useState(308.33);
-  const [fastenerCost, setFastenerCost] = useState(64.54);
-  const [partListCost, setPartListCost] = useState(18.20);
-  const [stairPartCost, setStairPartCost] = useState(2609.00);
+  // Persistent Project Data State
+  const [projectData, setProjectData] = useState({
+    projectPrice: 27000,
+    workers: [
+      { id: 1, name: 'Oliver Bennet', position: 'Manager', perHour: 56.00, hours: 0 },
+      { id: 2, name: 'Eleanor Davis', position: '3D Designer', perHour: 42.00, hours: 0 },
+      { id: 3, name: 'Callum Wright', position: 'Programmer', perHour: 35.00, hours: 8.25 },
+      { id: 4, name: 'Gemma Forest', position: 'CNC Operator', perHour: 20.00, hours: 5.00 },
+      { id: 5, name: 'Arthur Pendelton', position: 'Fabricator', perHour: 37.00, hours: 12.2 },
+      { id: 6, name: 'Fiona Higgins', position: 'Site Fitter', perHour: 35.00, hours: 0 },
+      { id: 7, name: 'Thomas Sterling', position: 'Welder', perHour: 35.00, hours: 11.33 },
+      { id: 8, name: 'Julian Fletcher', position: 'Driver', perHour: 24.00, hours: 2.62 },
+      { id: 9, name: 'Imogen Clarke', position: 'Drafter', perHour: 18.45, hours: 6.75 },
+    ],
+    materials: [
+      { id: 1, material: 'Polypropylene', price: 450, quantity: 1 },
+      { id: 2, material: 'S235 Mild Steel', price: 250, quantity: 2 },
+    ],
+    cuts: [
+      { id: 1, dimensions: '3000x1500x10', hours: 9.33, rate: 25.00 },
+      { id: 2, dimensions: '3000x1500x4', hours: 1.50, rate: 25.00 },
+    ],
+    fasteners: [
+      { id: 1, component: 'CSK M12', qty: 78, price: 0.45 },
+      { id: 2, component: 'Hex Nut M12', qty: 78, price: 0.12 },
+    ],
+    parts: [
+      { id: 1, part: 'RHS 40x40x1200', qty: 4, price: 4.55 },
+    ],
+    stairParts: [
+      { id: 1, part: 'Tread', qty: 17, price: 88.00 },
+      { id: 2, part: 'Hanging Plate', qty: 1, price: 94.00 },
+    ],
+  });
+
+  // Load from Supabase on mount
+  useEffect(() => {
+    if (isSignedIn) {
+      fetch('/api/project')
+        .then((res) => res.json())
+        .then((res) => {
+          if (res.data) {
+            setProjectData((prev) => ({ ...prev, ...res.data }));
+          }
+          setIsLoading(false);
+        })
+        .catch(() => setIsLoading(false));
+    }
+  }, [isSignedIn]);
+
+  // Save to Supabase helper
+  const updateAndSave = (newData) => {
+    const updated = { ...projectData, ...newData };
+    setProjectData(updated);
+    fetch('/api/project', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updated),
+    });
+  };
+
+  // Calculations derived directly from stored lists
+  const workersCost = projectData.workers.reduce((s, w) => s + (w.perHour * w.hours), 0);
+  const cncMaterialCost = projectData.materials.reduce((s, m) => s + (m.price * m.quantity), 0);
+  const cncTimeCost = projectData.cuts.reduce((s, c) => s + (c.hours * c.rate), 0);
+  const fastenerCost = projectData.fasteners.reduce((s, f) => s + (f.qty * f.price), 0);
+  const partListCost = projectData.parts.reduce((s, p) => s + (p.qty * p.price), 0);
+  const stairPartCost = projectData.stairParts.reduce((s, p) => s + (p.qty * p.price), 0);
 
   const totalProjectCost = workersCost + cncMaterialCost + cncTimeCost + fastenerCost + partListCost + stairPartCost;
-  const projectProfit = projectPrice - totalProjectCost;
+  const projectProfit = projectData.projectPrice - totalProjectCost;
 
   return (
     <main>
@@ -72,12 +132,14 @@ export default function Home() {
 
       {!isSignedIn ? (
         <SignedOutView />
+      ) : isLoading ? (
+        <div style={{ padding: '20px', fontSize: '14px', color: '#64748b' }}>Loading saved data...</div>
       ) : (
         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           {!activeCalc ? (
             <div className="dashboard-container">
               
-              {/* Card 1: Project Details */}
+              {/* Project Details */}
               <div className="card" style={{ padding: '20px', textAlign: 'left', alignItems: 'stretch' }}>
                 <h2 style={{ fontSize: '16px', color: '#1e293b', marginBottom: '14px', textAlign: 'center', borderBottom: '1px solid #e1e4e8', paddingBottom: '8px' }}>
                   Project Details
@@ -95,8 +157,8 @@ export default function Home() {
                     <span style={{ fontWeight: '600', color: '#64748b' }}>Project Price (£)</span>
                     <input 
                       type="number" 
-                      value={projectPrice} 
-                      onChange={(e) => setProjectPrice(Number(e.target.value))}
+                      value={projectData.projectPrice} 
+                      onChange={(e) => updateAndSave({ projectPrice: Number(e.target.value) })}
                       style={{ width: '110px', padding: '2px 6px', textAlign: 'right', border: '1px solid #cbd5e1', borderRadius: '4px' }}
                     />
                   </div>
@@ -111,7 +173,7 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Card 2: Navigation List of Sheets (All 13) */}
+              {/* Sheet Navigation List */}
               <div className="card" style={{ padding: '0px', overflow: 'hidden', textAlign: 'left', alignItems: 'stretch' }}>
                 <div style={{ padding: '12px 16px', background: '#f8fafc', borderBottom: '1px solid #e1e4e8', textAlign: 'center' }}>
                   <h2 style={{ fontSize: '15px', color: '#1e293b' }}>Navigation: List of Sheets ({calculatorList.length})</h2>
@@ -127,10 +189,7 @@ export default function Home() {
                       justifyContent: 'space-between',
                       alignItems: 'center',
                       borderBottom: idx < calculatorList.length - 1 ? '1px solid #e1e4e8' : 'none',
-                      transition: 'background 0.2s ease',
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
                     <div>
                       <span style={{ fontSize: '13px', color: '#0066cc', fontWeight: '500', display: 'block' }}>{calc.title}</span>
@@ -145,21 +204,46 @@ export default function Home() {
           ) : (
             /* Selected Calculator View */
             <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-              <button 
-                className="btn btn-secondary" 
-                onClick={() => setActiveCalc(null)}
-                style={{ marginBottom: '4px' }}
-              >
+              <button className="btn btn-secondary" onClick={() => setActiveCalc(null)} style={{ marginBottom: '4px' }}>
                 ← Back to Menu
               </button>
 
-              {activeCalc === 'workers' && <WorkersCostTracker onUpdateCost={setWorkersCost} />}
-              {activeCalc === 'cncmat' && <CNCMaterialTracker onUpdateCost={setCncMaterialCost} />}
-              {activeCalc === 'cnctime' && <CNCTimeTracker onUpdateCost={setCncTimeCost} />}
-              {activeCalc === 'workinghours' && <WorkersCostTracker onUpdateCost={setWorkersCost} />}
-              {activeCalc === 'fasteners' && <FastenerCostTracker onUpdateCost={setFastenerCost} />}
-              {activeCalc === 'partlist' && <PartListCostTracker onUpdateCost={setPartListCost} />}
-              {activeCalc === 'stairparts' && <PartListStairCostTracker onUpdateCost={setStairPartCost} />}
+              {activeCalc === 'workers' && (
+                <WorkersCostTracker 
+                  workers={projectData.workers} 
+                  onUpdate={(workers) => updateAndSave({ workers })} 
+                />
+              )}
+              {activeCalc === 'cncmat' && (
+                <CNCMaterialTracker 
+                  materials={projectData.materials} 
+                  onUpdate={(materials) => updateAndSave({ materials })} 
+                />
+              )}
+              {activeCalc === 'cnctime' && (
+                <CNCTimeTracker 
+                  cuts={projectData.cuts} 
+                  onUpdate={(cuts) => updateAndSave({ cuts })} 
+                />
+              )}
+              {activeCalc === 'fasteners' && (
+                <FastenerCostTracker 
+                  fasteners={projectData.fasteners} 
+                  onUpdate={(fasteners) => updateAndSave({ fasteners })} 
+                />
+              )}
+              {activeCalc === 'partlist' && (
+                <PartListCostTracker 
+                  parts={projectData.parts} 
+                  onUpdate={(parts) => updateAndSave({ parts })} 
+                />
+              )}
+              {activeCalc === 'stairparts' && (
+                <PartListStairCostTracker 
+                  stairParts={projectData.stairParts} 
+                  onUpdate={(stairParts) => updateAndSave({ stairParts })} 
+                />
+              )}
               {activeCalc === 'rising' && <StepRisingCalc />}
               {activeCalc === 'makeups' && <StepRisingMakeUpsCalc />}
               {activeCalc === 'risegoing' && <StairRiseGoingCalc />}
