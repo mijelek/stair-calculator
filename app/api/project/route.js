@@ -1,7 +1,11 @@
 // app/api/project/route.js
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export async function GET() {
   const { userId } = await auth();
@@ -15,9 +19,8 @@ export async function GET() {
     .eq('user_id', userId)
     .single();
 
-  if (error && error.code !== 'PGRST116') { // PGRST116 means no row found
-    console.error('Supabase fetch error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error && error.code !== 'PGRST116') {
+    console.error('Supabase GET Error:', error);
   }
 
   return NextResponse.json({ data: data?.data || null });
@@ -31,7 +34,7 @@ export async function POST(req) {
 
   const body = await req.json();
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('projects')
     .upsert({
       user_id: userId,
@@ -40,9 +43,9 @@ export async function POST(req) {
     });
 
   if (error) {
-    console.error('Supabase save error:', error);
+    console.error('Supabase POST Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, data });
 }
