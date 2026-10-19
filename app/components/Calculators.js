@@ -1,175 +1,232 @@
-// app/page.js
+// app/components/Calculators.js
 'use client';
-import { useState } from 'react';
-import { useAuth, UserButton } from '@clerk/nextjs';
-import SignedOutView from './components/SignedOutView';
-import {
-  WorkersCostTracker,
-  CNCMaterialTracker,
-  CNCTimeTracker,
-  FastenerCostTracker,
-  PartListCostTracker,
-  PartListStairCostTracker,
-  StepRisingCalc,
-  StepRisingMakeUpsCalc,
-  StairRiseGoingCalc,
-  TreadGoingAngleCalc,
-  StairBalustradeCalc,
-  StairBuildingRegulationsCalc,
-} from './components/Calculators';
+import { useState, useEffect } from 'react';
 
-const calculatorList = [
-  { id: 'workers', title: 'Workers and Cost Tracker', desc: 'Manage site worker rates and totals.' },
-  { id: 'cncmat', title: 'CNC Cutting Material Tracker', desc: 'Sheet dimensions, mass, and density.' },
-  { id: 'cnctime', title: 'CNC Cutting Time Tracker', desc: 'Machining run times and operational costs.' },
-  { id: 'workinghours', title: 'Working Hours Cost Tracker', desc: 'Track hourly rates and total labor expenses.' },
-  { id: 'fasteners', title: 'Fastener Cost Tracker', desc: 'Fastener quantities and pricing.' },
-  { id: 'partlist', title: 'Part List Cost Tracker', desc: 'Track minor components and parts.' },
-  { id: 'stairparts', title: 'Part List Stair Cost Tracker', desc: 'Main part lists, treads, plates, and galleries.' },
-  { id: 'rising', title: 'CALC-Step Rising', desc: 'Step riser heights & UK Regs compliance.' },
-  { id: 'makeups', title: 'CALC-Step Rising with Make Ups', desc: 'Screed and makeup height adjustments.' },
-  { id: 'risegoing', title: 'CALC-Stair Calculator', desc: 'Overall stair rise and going.' },
-  { id: 'angle', title: 'CALC-Stair Calculator 2', desc: 'Going and pitch angle.' },
-  { id: 'balustrade', title: 'CALC-Stair Balustrade', desc: 'Bar spacing and geometric delta values.' },
-  { id: 'regulations', title: 'Stair Building Regulations', desc: 'Approved Document K code standards.' },
-];
-
-export default function Home() {
-  const { isSignedIn } = useAuth();
-  const [activeCalc, setActiveCalc] = useState(null);
-
-  // Shared state fed from calculators
-  const [projectPrice, setProjectPrice] = useState(27000);
-  const [workersCost, setWorkersCost] = useState(1424.15);
-  const [cncMaterialCost, setCncMaterialCost] = useState(950.00);
-  const [cncTimeCost, setCncTimeCost] = useState(308.33);
-  const [fastenerCost, setFastenerCost] = useState(64.54);
-  const [partListCost, setPartListCost] = useState(18.20);
-  const [stairPartCost, setStairPartCost] = useState(2609.00);
-
-  const totalProjectCost = workersCost + cncMaterialCost + cncTimeCost + fastenerCost + partListCost + stairPartCost;
-  const projectProfit = projectPrice - totalProjectCost;
+export function WorkersCostTracker({ onUpdateCost }) {
+  const [workers] = useState([
+    { id: 1, name: 'Oliver Bennet', position: 'Manager', perHour: 56.00, hours: 0 },
+    { id: 2, name: 'Eleanor Davis', position: '3D Designer', perHour: 42.00, hours: 0 },
+    { id: 3, name: 'Callum Wright', position: 'Programmer', perHour: 35.00, hours: 8.25 },
+    { id: 4, name: 'Gemma Forest', position: 'CNC Operator', perHour: 20.00, hours: 5.00 },
+    { id: 5, name: 'Arthur Pendelton', position: 'Fabricator', perHour: 37.00, hours: 12.2 },
+    { id: 6, name: 'Fiona Higgins', position: 'Site Fitter', perHour: 35.00, hours: 0 },
+    { id: 7, name: 'Thomas Sterling', position: 'Welder', perHour: 35.00, hours: 11.33 },
+    { id: 8, name: 'Julian Fletcher', position: 'Driver', perHour: 24.00, hours: 2.62 },
+    { id: 9, name: 'Imogen Clarke', position: 'Drafter', perHour: 18.45, hours: 6.75 },
+  ]);
+  const totalCost = workers.reduce((sum, w) => sum + (w.perHour * w.hours), 0);
+  useEffect(() => { if (onUpdateCost) onUpdateCost(totalCost); }, [totalCost, onUpdateCost]);
 
   return (
-    <main>
-      <header>
-        <h1>Stair Calc</h1>
-        {isSignedIn && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            {activeCalc && (
-              <button 
-                className="btn btn-secondary" 
-                style={{ width: 'auto', padding: '6px 10px', fontSize: '12px' }}
-                onClick={() => setActiveCalc(null)}
-              >
-                ← Menu
-              </button>
-            )}
-            <UserButton afterSignOutUrl="/" />
-          </div>
-        )}
-      </header>
+    <div className="card">
+      <h2>Workers and Cost Tracker</h2>
+      <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse', marginTop: '10px' }}>
+        <thead>
+          <tr style={{ background: '#334155', color: '#fff' }}>
+            <th style={{ padding: '6px' }}>Name</th>
+            <th style={{ padding: '6px' }}>Position</th>
+            <th style={{ padding: '6px' }}>£/Hr</th>
+            <th style={{ padding: '6px' }}>Total (£)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {workers.map(w => (
+            <tr key={w.id} style={{ borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>
+              <td style={{ padding: '6px' }}>{w.name}</td>
+              <td style={{ padding: '6px' }}>{w.position}</td>
+              <td style={{ padding: '6px' }}>£{w.perHour.toFixed(2)}</td>
+              <td style={{ padding: '6px', fontWeight: 'bold', color: '#0066cc' }}>£{(w.perHour * w.hours).toFixed(2)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="result-box" style={{ marginTop: '12px' }}><strong>Total: £{totalCost.toFixed(2)}</strong></div>
+    </div>
+  );
+}
 
-      {!isSignedIn ? (
-        <SignedOutView />
-      ) : (
-        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          {!activeCalc ? (
-            <div className="dashboard-container">
-              
-              {/* Card 1: Project Details */}
-              <div className="card" style={{ padding: '20px', textAlign: 'left', alignItems: 'stretch' }}>
-                <h2 style={{ fontSize: '16px', color: '#1e293b', marginBottom: '14px', textAlign: 'center', borderBottom: '1px solid #e1e4e8', paddingBottom: '8px' }}>
-                  Project Details
-                </h2>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
-                    <span style={{ fontWeight: '600', color: '#64748b' }}>Project</span>
-                    <span style={{ color: '#1e293b' }}>Stairs with Balustrade</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
-                    <span style={{ fontWeight: '600', color: '#64748b' }}>Customer</span>
-                    <span style={{ color: '#1e293b' }}>Burvills</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
-                    <span style={{ fontWeight: '600', color: '#64748b' }}>Project Price (£)</span>
-                    <input 
-                      type="number" 
-                      value={projectPrice} 
-                      onChange={(e) => setProjectPrice(Number(e.target.value))}
-                      style={{ width: '110px', padding: '2px 6px', textAlign: 'right', border: '1px solid #cbd5e1', borderRadius: '4px' }}
-                    />
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
-                    <span style={{ fontWeight: '600', color: '#64748b' }}>Total Project Cost</span>
-                    <span style={{ color: '#d97706', fontWeight: '600' }}>£{totalProjectCost.toFixed(2)}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '2px' }}>
-                    <span style={{ fontWeight: '600', color: '#64748b' }}>Profit</span>
-                    <span style={{ color: '#16a34a', fontWeight: '600' }}>£{projectProfit.toFixed(2)}</span>
-                  </div>
-                </div>
-              </div>
+export function CNCMaterialTracker({ onUpdateCost }) {
+  const [materials] = useState([
+    { id: 1, dims: '3000x2000x10', mat: 'Polypropylene', price: 450, qty: 1 },
+    { id: 2, dims: '3000x1500x4', mat: 'S235 Mild Steel', price: 250, qty: 2 },
+  ]);
+  const totalCost = materials.reduce((sum, m) => sum + (m.price * m.qty), 0);
+  useEffect(() => { if (onUpdateCost) onUpdateCost(totalCost); }, [totalCost, onUpdateCost]);
 
-              {/* Card 2: Navigation List of Sheets (All 13) */}
-              <div className="card" style={{ padding: '0px', overflow: 'hidden', textAlign: 'left', alignItems: 'stretch' }}>
-                <div style={{ padding: '12px 16px', background: '#f8fafc', borderBottom: '1px solid #e1e4e8', textAlign: 'center' }}>
-                  <h2 style={{ fontSize: '15px', color: '#1e293b' }}>Navigation: List of Sheets ({calculatorList.length})</h2>
-                </div>
-                {calculatorList.map((calc, idx) => (
-                  <div
-                    key={calc.id}
-                    onClick={() => setActiveCalc(calc.id)}
-                    style={{
-                      padding: '12px 16px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      borderBottom: idx < calculatorList.length - 1 ? '1px solid #e1e4e8' : 'none',
-                      transition: 'background 0.2s ease',
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                  >
-                    <div>
-                      <span style={{ fontSize: '13px', color: '#0066cc', fontWeight: '500', display: 'block' }}>{calc.title}</span>
-                      <span style={{ fontSize: '11px', color: '#64748b' }}>{calc.desc}</span>
-                    </div>
-                    <span style={{ color: '#94a3b8' }}>→</span>
-                  </div>
-                ))}
-              </div>
+  return (
+    <div className="card">
+      <h2>CNC Cutting Material Tracker</h2>
+      <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse', marginTop: '10px' }}>
+        <thead><tr style={{ background: '#334155', color: '#fff' }}><th style={{ padding: '4px' }}>Dims</th><th style={{ padding: '4px' }}>Material</th><th style={{ padding: '4px' }}>Price</th><th style={{ padding: '4px' }}>Total</th></tr></thead>
+        <tbody>
+          {materials.map(m => (
+            <tr key={m.id} style={{ borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>
+              <td style={{ padding: '4px' }}>{m.dims}</td><td style={{ padding: '4px' }}>{m.mat}</td><td style={{ padding: '4px' }}>£{m.price}</td><td style={{ padding: '4px', fontWeight: 'bold' }}>£{m.price * m.qty}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="result-box" style={{ marginTop: '12px' }}><strong>Total: £{totalCost.toFixed(2)}</strong></div>
+    </div>
+  );
+}
 
-            </div>
-          ) : (
-            /* Selected Calculator View */
-            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-              <button 
-                className="btn btn-secondary" 
-                onClick={() => setActiveCalc(null)}
-                style={{ marginBottom: '4px' }}
-              >
-                ← Back to Menu
-              </button>
+export function CNCTimeTracker({ onUpdateCost }) {
+  const [cuts] = useState([
+    { id: 1, dims: '3000x1500x10', hours: 9.33, rate: 25 },
+    { id: 2, dims: '3000x1500x4', hours: 1.50, rate: 25 },
+  ]);
+  const totalCost = cuts.reduce((sum, c) => sum + (c.hours * c.rate), 0);
+  useEffect(() => { if (onUpdateCost) onUpdateCost(totalCost); }, [totalCost, onUpdateCost]);
 
-              {activeCalc === 'workers' && <WorkersCostTracker onUpdateCost={setWorkersCost} />}
-              {activeCalc === 'cncmat' && <CNCMaterialTracker onUpdateCost={setCncMaterialCost} />}
-              {activeCalc === 'cnctime' && <CNCTimeTracker onUpdateCost={setCncTimeCost} />}
-              {activeCalc === 'workinghours' && <WorkersCostTracker onUpdateCost={setWorkersCost} />}
-              {activeCalc === 'fasteners' && <FastenerCostTracker onUpdateCost={setFastenerCost} />}
-              {activeCalc === 'partlist' && <PartListCostTracker onUpdateCost={setPartListCost} />}
-              {activeCalc === 'stairparts' && <PartListStairCostTracker onUpdateCost={setStairPartCost} />}
-              {activeCalc === 'rising' && <StepRisingCalc />}
-              {activeCalc === 'makeups' && <StepRisingMakeUpsCalc />}
-              {activeCalc === 'risegoing' && <StairRiseGoingCalc />}
-              {activeCalc === 'angle' && <TreadGoingAngleCalc />}
-              {activeCalc === 'balustrade' && <StairBalustradeCalc />}
-              {activeCalc === 'regulations' && <StairBuildingRegulationsCalc />}
-            </div>
-          )}
-        </div>
-      )}
-    </main>
+  return (
+    <div className="card">
+      <h2>CNC Cutting Time Tracker</h2>
+      <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse', marginTop: '10px' }}>
+        <thead><tr style={{ background: '#334155', color: '#fff' }}><th style={{ padding: '4px' }}>Dims</th><th style={{ padding: '4px' }}>Hours</th><th style={{ padding: '4px' }}>Total</th></tr></thead>
+        <tbody>
+          {cuts.map(c => (
+            <tr key={c.id} style={{ borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>
+              <td style={{ padding: '4px' }}>{c.dims}</td><td style={{ padding: '4px' }}>{c.hours}h</td><td style={{ padding: '4px', fontWeight: 'bold' }}>£{c.hours * c.rate}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="result-box" style={{ marginTop: '12px' }}><strong>Total: £{totalCost.toFixed(2)}</strong></div>
+    </div>
+  );
+}
+
+export function FastenerCostTracker({ onUpdateCost }) {
+  const [fasteners] = useState([
+    { id: 1, name: 'CSK M12', qty: 78, price: 0.45 },
+    { id: 2, name: 'Hex Nut M12', qty: 78, price: 0.12 },
+  ]);
+  const totalCost = fasteners.reduce((sum, f) => sum + (f.qty * f.price), 0);
+  useEffect(() => { if (onUpdateCost) onUpdateCost(totalCost); }, [totalCost, onUpdateCost]);
+
+  return (
+    <div className="card">
+      <h2>Fastener Cost Tracker</h2>
+      <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse', marginTop: '10px' }}>
+        <thead><tr style={{ background: '#334155', color: '#fff' }}><th style={{ padding: '4px' }}>Component</th><th style={{ padding: '4px' }}>Qty</th><th style={{ padding: '4px' }}>Total</th></tr></thead>
+        <tbody>
+          {fasteners.map(f => (
+            <tr key={f.id} style={{ borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>
+              <td style={{ padding: '4px' }}>{f.name}</td><td style={{ padding: '4px' }}>{f.qty}</td><td style={{ padding: '4px', fontWeight: 'bold' }}>£{(f.qty * f.price).toFixed(2)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="result-box" style={{ marginTop: '12px' }}><strong>Total: £{totalCost.toFixed(2)}</strong></div>
+    </div>
+  );
+}
+
+export function PartListCostTracker({ onUpdateCost }) {
+  const [parts] = useState([{ id: 1, part: 'RHS 40x40x1200', qty: 4, price: 4.55 }]);
+  const totalCost = parts.reduce((sum, p) => sum + (p.qty * p.price), 0);
+  useEffect(() => { if (onUpdateCost) onUpdateCost(totalCost); }, [totalCost, onUpdateCost]);
+
+  return (
+    <div className="card">
+      <h2>Part List Cost Tracker</h2>
+      <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse', marginTop: '10px' }}>
+        <thead><tr style={{ background: '#334155', color: '#fff' }}><th style={{ padding: '4px' }}>Part</th><th style={{ padding: '4px' }}>Qty</th><th style={{ padding: '4px' }}>Sum</th></tr></thead>
+        <tbody>
+          {parts.map(p => (
+            <tr key={p.id} style={{ borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>
+              <td style={{ padding: '4px' }}>{p.part}</td><td style={{ padding: '4px' }}>{p.qty}</td><td style={{ padding: '4px', fontWeight: 'bold' }}>£{p.qty * p.price}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="result-box" style={{ marginTop: '12px' }}><strong>Total: £{totalCost.toFixed(2)}</strong></div>
+    </div>
+  );
+}
+
+export function PartListStairCostTracker({ onUpdateCost }) {
+  const [mainParts] = useState([
+    { part: 'Tread', qty: 17, price: 88.00 },
+    { part: 'Hanging Plate', qty: 1, price: 94.00 },
+  ]);
+  const totalCost = mainParts.reduce((sum, p) => sum + (p.qty * p.price), 0);
+  useEffect(() => { if (onUpdateCost) onUpdateCost(totalCost); }, [totalCost, onUpdateCost]);
+
+  return (
+    <div className="card">
+      <h2>Part List Stair Cost Tracker</h2>
+      <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse', marginTop: '10px' }}>
+        <thead><tr style={{ background: '#334155', color: '#fff' }}><th style={{ padding: '4px' }}>Part</th><th style={{ padding: '4px' }}>Qty</th><th style={{ padding: '4px' }}>Sum</th></tr></thead>
+        <tbody>
+          {mainParts.map((p, idx) => (
+            <tr key={idx} style={{ borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>
+              <td style={{ padding: '4px' }}>{p.part}</td><td style={{ padding: '4px' }}>{p.qty}</td><td style={{ padding: '4px', fontWeight: 'bold' }}>£{p.qty * p.price}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="result-box" style={{ marginTop: '12px' }}><strong>Total: £{totalCost.toFixed(2)}</strong></div>
+    </div>
+  );
+}
+
+export function StepRisingCalc() {
+  const [floor, setFloor] = useState(3500);
+  const [steps, setSteps] = useState(22);
+  const riser = steps > 0 ? floor / steps : 0;
+  return (
+    <div className="card">
+      <h2>CALC - Step Rising</h2>
+      <div className="form-group"><label>Floor Height (mm)</label><input type="number" value={floor} onChange={e => setFloor(Number(e.target.value))} /></div>
+      <div className="form-group"><label>Step Numbers</label><input type="number" value={steps} onChange={e => setSteps(Number(e.target.value))} /></div>
+      <div className="result-box"><strong>Riser Height: {riser.toFixed(1)} mm</strong></div>
+    </div>
+  );
+}
+
+export function StepRisingMakeUpsCalc() {
+  return (
+    <div className="card">
+      <h2>CALC - Step Rising with Make Ups</h2>
+      <p style={{ fontSize: '12px', color: '#64748b' }}>Screed and makeup height adjustments.</p>
+    </div>
+  );
+}
+
+export function StairRiseGoingCalc() {
+  return (
+    <div className="card">
+      <h2>CALC - Stair Calculator</h2>
+      <p style={{ fontSize: '12px', color: '#64748b' }}>Overall stair rise and going calculations.</p>
+    </div>
+  );
+}
+
+export function TreadGoingAngleCalc() {
+  return (
+    <div className="card">
+      <h2>CALC - Stair Calculator 2</h2>
+      <p style={{ fontSize: '12px', color: '#64748b' }}>Going and pitch angle calculation module.</p>
+    </div>
+  );
+}
+
+export function StairBalustradeCalc() {
+  return (
+    <div className="card">
+      <h2>CALC - Stair Balustrade</h2>
+      <p style={{ fontSize: '12px', color: '#64748b' }}>Bar spacing and 100mm sphere rule checks.</p>
+    </div>
+  );
+}
+
+export function StairBuildingRegulationsCalc() {
+  return (
+    <div className="card">
+      <h2>Stair Building Regulations</h2>
+      <p style={{ fontSize: '12px', color: '#64748b' }}>Approved Document K code standards.</p>
+    </div>
   );
 }
