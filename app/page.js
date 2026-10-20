@@ -19,7 +19,7 @@ import {
   PanelSimpleCalc,
 } from './components/Calculators';
 
-// 3 Folders Structure (Cleaned without badge tags)
+// 3 Folders Structure
 const folderCategories = [
   {
     id: 'panels',
@@ -161,7 +161,6 @@ export default function Home() {
 
   return (
     <main style={{ paddingBottom: '90px' }}>
-      // app/page.js - Header Snippet Update
       <header>
         <h1>Stair Calculator</h1>
         {isSignedIn && (
@@ -176,7 +175,6 @@ export default function Home() {
               </button>
             )}
             
-            {/* Clean Clerk UserButton without any extra border wrapper */}
             <UserButton 
               afterSignOutUrl="/" 
               appearance={{
