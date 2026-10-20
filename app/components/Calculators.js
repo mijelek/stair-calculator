@@ -601,3 +601,51 @@ export function StairBuildingRegulationsCalc() {
     </div>
   );
 }
+// Add to app/components/Calculators.js
+
+export function PanelSimpleCalc() {
+  const [panelLength, setPanelLength] = useState(2400);
+  const [barDiameter, setBarDiameter] = useState(20);
+  const [barCount, setBarCount] = useState(25);
+  const [maxGapLimit, setMaxGapLimit] = useState(100);
+
+  const totalBarSpan = barCount * barDiameter;
+  const totalVoidSpace = Math.max(0, panelLength - totalBarSpan);
+  const clearGap = barCount > 0 ? totalVoidSpace / (barCount + 1) : 0;
+  const centerSpacing = clearGap + barDiameter;
+  const isCompliant = clearGap <= maxGapLimit;
+
+  return (
+    <div className="card">
+      <h2>Panel Fabrication & Spacing Calculator</h2>
+      <p style={{ fontSize: '11px', color: '#64748b' }}>Single Bar Panel Specification & Spacing Standard</p>
+      
+      <div className="form-group">
+        <label>Panel Length (L) (mm)</label>
+        <input type="number" value={panelLength} onChange={(e) => setPanelLength(Number(e.target.value))} />
+      </div>
+      <div className="form-group">
+        <label>Bar Diameter (D) (mm)</label>
+        <input type="number" value={barDiameter} onChange={(e) => setBarDiameter(Number(e.target.value))} />
+      </div>
+      <div className="form-group">
+        <label>Bar Count (N) (pcs)</label>
+        <input type="number" value={barCount} onChange={(e) => setBarCount(Number(e.target.value))} />
+      </div>
+      <div className="form-group">
+        <label>Max Gap Limit (mm)</label>
+        <input type="number" value={maxGapLimit} onChange={(e) => setMaxGapLimit(Number(e.target.value))} />
+      </div>
+
+      <div className="result-box" style={{ marginTop: '12px' }}>
+        <div>Clear Gap (G): <strong>{clearGap.toFixed(1)} mm</strong></div>
+        <div>Center-to-Center Spacing (C): <strong>{centerSpacing.toFixed(1)} mm</strong></div>
+        <div>Total Bar Material Span: <strong>{totalBarSpan} mm</strong></div>
+        <div>Total Clear Void Space: <strong>{totalVoidSpace} mm</strong></div>
+        <div style={{ fontWeight: 'bold', color: isCompliant ? '#16a34a' : '#dc2626', marginTop: '4px' }}>
+          Code Compliance (≤{maxGapLimit}mm): {isCompliant ? '✓ COMPLIANT' : '✕ NON-COMPLIANT'}
+        </div>
+      </div>
+    </div>
+  );
+}

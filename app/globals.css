@@ -1,4 +1,6 @@
 /* app/globals.css */
+@import "tailwindcss";
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -120,4 +122,30 @@ h1 {
   gap: 8px;
   text-align: center;
   font-size: 13px;
+}
+
+/* 3D Flip Card Styles */
+.perspective-1000 {
+  perspective: 1000px;
+}
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+.backface-hidden {
+  backface-visibility: hidden;
+}
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+.group:hover .group-hover\:rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* Horizontal Scrollbar Hide */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
