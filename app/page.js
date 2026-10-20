@@ -161,6 +161,7 @@ export default function Home() {
 
   return (
     <main style={{ paddingBottom: '90px' }}>
+      // app/page.js - Header Snippet Update
       <header>
         <h1>Stair Calculator</h1>
         {isSignedIn && (
@@ -175,27 +176,18 @@ export default function Home() {
               </button>
             )}
             
-            {/* Styled Clerk Profile Button to Match Theme Blue */}
-            <div style={{
-              borderRadius: '50%',
-              backgroundColor: '#0066cc',
-              padding: '2px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <UserButton 
-                afterSignOutUrl="/" 
-                appearance={{
-                  elements: {
-                    userButtonAvatarBox: {
-                      width: '32px',
-                      height: '32px',
-                    }
+            {/* Clean Clerk UserButton without any extra border wrapper */}
+            <UserButton 
+              afterSignOutUrl="/" 
+              appearance={{
+                elements: {
+                  userButtonAvatarBox: {
+                    width: '32px',
+                    height: '32px',
                   }
-                }}
-              />
-            </div>
+                }
+              }}
+            />
           </div>
         )}
       </header>
