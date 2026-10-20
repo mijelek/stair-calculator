@@ -1,7 +1,7 @@
 // app/page.js
 'use client';
 import { useState, useEffect } from 'react';
-import { useAuth, UserButton } from '@clerk/nextjs';
+import { useAuth, UserButton, SignInButton, SignUpButton } from '@clerk/nextjs';
 import SignedOutView from './components/SignedOutView';
 import {
   WorkersCostTracker,
@@ -163,7 +163,7 @@ export default function Home() {
     <main style={{ paddingBottom: '90px' }}>
       <header>
         <h1>Stair Calculator</h1>
-        {isSignedIn && (
+        {isSignedIn ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             {activeCalc && (
               <button 
@@ -186,6 +186,20 @@ export default function Home() {
                 }
               }}
             />
+          </div>
+        ) : (
+          /* Header Authentication Buttons when Signed Out */
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <SignInButton mode="modal">
+              <button className="btn" style={{ width: 'auto', padding: '6px 12px', fontSize: '12px' }}>
+                Sign In
+              </button>
+            </SignInButton>
+            <SignUpButton mode="modal">
+              <button className="btn btn-secondary" style={{ width: 'auto', padding: '6px 12px', fontSize: '12px' }}>
+                Sign Up
+              </button>
+            </SignUpButton>
           </div>
         )}
       </header>
